@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1Panel 面板一键安装器 · 桌面版</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230b6bff'/><text x='50' y='72' font-size='58' font-family='Arial' font-weight='bold' fill='white' text-anchor='middle'>1P</text></svg>">
+<style>
+:root {
+  --bg: #f5f8fc;
+  --card: #ffffff;
+  --text: #0f172a;
+  --text-2: #526079;
+  --text-3: #8a97ab;
+  --brand: #0b6bff;
+  --brand-2: #00b7ff;
+  --brand-soft: #eaf3ff;
+  --brand-border: #c9e0ff;
+  --border: #e6ecf4;
+  --success: #0b9c63;
+  --success-soft: #e8f8f1;
+  --danger: #d93025;
+  --danger-soft: #fdecea;
+  --warn: #b45309;
+  --warn-soft: #fff7e8;
+  --radius: 14px;
+  --mono: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: "Microsoft YaHei UI", "PingFang SC", system-ui, -apple-system, sans-serif;
+  font-size: 14px; line-height: 1.65;
+}
+a { color: var(--brand); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.nav { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.88); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+.nav-inner { max-width: 1080px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
+.logo-mark { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; font-size: 14px; font-weight: 800; letter-spacing: -.5px; }
+.logo small { font-weight: 500; color: var(--text-3); font-size: 12.5px; margin-left: 2px; }
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-links a { color: var(--text-2); font-size: 13px; padding: 6px 10px; border-radius: 8px; }
+.nav-links a:hover { color: var(--brand); background: var(--brand-soft); text-decoration: none; }
+
+.container { max-width: 1080px; margin: 0 auto; padding: 28px 24px 64px; }
+
+.hero { text-align: center; padding: 26px 0 8px; }
+.hero h1 { font-size: 30px; margin: 12px 0 10px; letter-spacing: -.5px; }
+.hero h1 .grad { background: linear-gradient(135deg, var(--brand), var(--brand-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero p { color: var(--text-2); max-width: 660px; margin: 0 auto; }
+.hero-badge { display: inline-flex; align-items: center; gap: 7px; background: var(--brand-soft); color: var(--brand); border: 1px solid var(--brand-border); border-radius: 999px; padding: 5px 13px; font-size: 12.5px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
+.entry-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 26px; }
+.entry { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; text-align: left; cursor: pointer; transition: all .18s; }
+.entry:hover { border-color: var(--brand-border); box-shadow: 0 6px 20px rgba(11,107,255,.10); transform: translateY(-2px); }
+.entry-ico { font-size: 20px; }
+.entry h3 { margin: 8px 0 4px; font-size: 15px; }
+.entry p { margin: 0; color: var(--text-3); font-size: 12.5px; line-height: 1.6; }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.steps-bar { display: flex; align-items: center; gap: 8px; padding: 14px 20px; border-bottom: 1px solid var(--border); background: #fbfdff; }
+.step-item { display: flex; align-items: center; gap: 7px; color: var(--text-3); font-size: 12.5px; white-space: nowrap; }
+.step-item .num { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: #eef2f8; color: var(--text-3); font-size: 12px; font-weight: 600; }
+.step-item.active { color: var(--brand); font-weight: 600; }
+.step-item.active .num { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; }
+.step-item.done .num { background: var(--success-soft); color: var(--success); }
+.step-sep { flex: 1; height: 1px; background: var(--border); }
+.pane { display: none; padding: 22px; }
+.pane.show { display: block; }
+.pane-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+.pane-desc { color: var(--text-2); font-size: 13px; margin-bottom: 18px; }
+
+.hint-box { display: flex; gap: 10px; background: var(--brand-soft); border: 1px solid var(--brand-border); color: var(--text-2); border-radius: 12px; padding: 11px 15px; font-size: 12.5px; margin-bottom: 18px; }
+.hint-box b { color: var(--text); }
+.hint-box.warn { background: var(--warn-soft); border-color: #f6dfb0; color: #7c4a03; }
+.hint-box.success { background: var(--success-soft); border-color: #bfe8d0; color: #0b6b3a; }
+.hint-box.danger { background: var(--danger-soft); border-color: #f6c7c2; color: #8f1f18; }
+.hint-box a { color: var(--brand); font-weight: 600; border-bottom: 1px dashed var(--brand-border); }
+.hint-box a:hover { border-bottom-color: transparent; text-decoration: none; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+.form-item { display: flex; flex-direction: column; gap: 6px; }
+.form-item.full { grid-column: 1 / -1; }
+label { font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+label .req { color: var(--danger); margin-left: 2px; }
+label .tip { font-weight: 400; color: var(--text-3); font-size: 11.5px; margin-left: 4px; }
+input[type=text], input[type=password], input[type=number], select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
+  font-size: 13.5px; font-family: inherit; background: #fff; color: var(--text); outline: none; transition: all .15s;
+}
+input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(11,107,255,.10); }
+input.invalid { border-color: var(--danger); background: #fff8f8; }
+.field-error { display: none; color: var(--danger); font-size: 11.5px; }
+input.invalid + .field-error { display: block; }
+.input-with-btn { display: flex; gap: 8px; align-items: center; }
+.input-with-btn input { flex: 1; }
+.mini-btn { white-space: nowrap; padding: 9px 12px; border-radius: 9px; border: 1px solid var(--border); background: #fff; color: var(--text-2); font-size: 12.5px; cursor: pointer; font-family: inherit; }
+.mini-btn:hover { border-color: var(--brand-border); color: var(--brand); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 18px; border-radius: 10px; border: none; font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .15s; }
+.btn-primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; box-shadow: 0 4px 12px rgba(11,107,255,.25); }
+.btn-primary:hover { filter: brightness(1.06); box-shadow: 0 6px 18px rgba(11,107,255,.32); }
+.btn-secondary { background: #fff; color: var(--text-2); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--brand-border); color: var(--brand); }
+.btn-sm { padding: 7px 13px; font-size: 12.5px; border-radius: 8px; }
+.btn:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
+.actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--border); }
+
+.conn-status { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding: 10px 14px; border-radius: 10px; font-size: 13px; }
+.conn-status.ok { background: var(--success-soft); color: #0b6b3a; border: 1px solid #bfe8d0; }
+.conn-status.fail { background: var(--danger-soft); color: #8f1f18; border: 1px solid #f6c7c2; }
+.conn-status:empty { display: none; }
+.spinner { width: 13px; height: 13px; border: 2px solid var(--brand-border); border-top-color: var(--brand); border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.radio-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
+.radio-card { border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; cursor: pointer; background: #fff; transition: all .15s; }
+.radio-card:hover { border-color: var(--brand-border); }
+.radio-card.selected { border-color: var(--brand); background: var(--brand-soft); }
+.radio-card .rc-title { font-weight: 600; font-size: 13.5px; display: flex; justify-content: space-between; gap: 8px; }
+.radio-card .rc-note { color: var(--text-3); font-size: 11.5px; margin-top: 3px; }
+.rc-check { color: var(--brand); font-weight: 700; }
+
+.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 12px 0; }
+.info-cell { background: #fbfdff; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.info-cell .k { color: var(--text-3); font-size: 11.5px; }
+.info-cell .v { font-weight: 600; font-size: 13px; margin-top: 2px; word-break: break-all; }
+
+.term { background: #101720; border-radius: 12px; overflow: hidden; margin-top: 14px; }
+.term-bar { display: flex; align-items: center; gap: 8px; padding: 9px 13px; background: #182231; color: #a9b7c9; font-size: 12px; }
+.term-dots { display: flex; gap: 6px; }
+.term-dots i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+.term-body { height: 340px; overflow-y: auto; padding: 12px 14px; color: #d7e2f0; font-family: var(--mono); font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
+.term-body .l-success { color: #7ee787; }
+.term-body .l-error { color: #ff7b72; }
+.term-body .l-warn { color: #f2cc60; }
+.term-body .l-progress { color: #8ab4ff; }
+
+.stage-list { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+.stage { display: flex; gap: 10px; align-items: center; color: var(--text-3); font-size: 13px; }
+.stage .num { width: 22px; height: 22px; border-radius: 50%; background: #eef2f8; display: grid; place-items: center; font-size: 11.5px; color: var(--text-3); }
+.stage.active { color: var(--brand); font-weight: 600; }
+.stage.active .num { background: var(--brand-soft); color: var(--brand); }
+.stage.done { color: var(--success); }
+.stage.done .num { background: var(--success-soft); color: var(--success); }
+
+.result-box { background: var(--success-soft); border: 1px solid #bfe8d0; border-radius: 14px; padding: 18px; margin-top: 16px; }
+.result-title { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #0b6b3a; font-size: 16px; margin-bottom: 4px; }
+.result-sub { color: #2f7a52; font-size: 12.5px; margin-bottom: 14px; }
+.copy-row { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #d9efe2; border-radius: 10px; padding: 10px 13px; margin-bottom: 9px; }
+.copy-row .label { color: var(--text-3); font-size: 11.5px; }
+.copy-row .value { font-family: var(--mono); font-size: 13px; color: var(--text); word-break: break-all; flex: 1; }
+.copy-row .value.pass { letter-spacing: .5px; }
+
+.mono { font-family: var(--mono); }
+.small { font-size: 12px; color: var(--text-3); }
+.section-title { font-size: 14px; font-weight: 700; margin: 18px 0 10px; }
+textarea { width: 100%; min-height: 90px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; font-family: var(--mono); font-size: 12.5px; resize: vertical; outline: none; }
+textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(11,107,255,.10); }
+.cmd-box { background: #101720; color: #d7e2f0; border-radius: 12px; padding: 14px; font-family: var(--mono); font-size: 12px; line-height: 1.7; word-break: break-all; white-space: pre-wrap; max-height: 360px; overflow: auto; }
+.out-box { background: #fbfdff; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-family: var(--mono); font-size: 12px; white-space: pre-wrap; max-height: 320px; overflow-y: auto; color: var(--text-2); }
+.toast { position: fixed; left: 50%; bottom: 34px; transform: translateX(-50%) translateY(20px); background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 13px; opacity: 0; pointer-events: none; transition: all .22s; z-index: 200; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.hidden { display: none !important; }
+.footer { border-top: 1px solid var(--border); padding: 18px 24px; text-align: center; color: var(--text-3); font-size: 12px; }
+.footer a { color: var(--text-2); }
+.check-line { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12.5px; color: var(--text-2); }
+.check-line input { width: 15px; height: 15px; accent-color: var(--brand); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="logo">
+      <div class="logo-mark">1P</div>
+      1Panel 面板一键安装器 <small>桌面版</small>
+    </div>
+    <div class="nav-links">
+      <a href="https://www.vpsjh.com" target="_blank" rel="noopener">VPS聚合站</a>
+      <a href="https://1panel.cn" target="_blank" rel="noopener">1Panel 官网</a>
+      <a href="https://github.com/1Panel-dev/1Panel" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- 首页 -->
+  <section class="hero" id="hero">
+    <div class="hero-badge"><span class="dot"></span>自动识别系统 · 官方安装包 · 中文 / 英文双语安装</div>
+    <h1>一键安装 <span class="grad">1Panel 面板</span></h1>
+    <p>填写服务器信息，程序通过 SSH 自动识别系统类型、版本与 CPU 架构，匹配 1Panel 官方 v2 安装包并执行安装，最后把面板地址、账号、密码直接交给你。</p>
+    <div class="entry-grid">
+      <div class="entry" onclick="goStep(1)">
+        <div class="entry-ico">🚀</div>
+        <h3>开始安装</h3>
+        <p>四步完成部署：服务器信息 → 安装配置 → 自动安装 → 安装完成</p>
+      </div>
+      <div class="entry" onclick="goStep('rescue')">
+        <div class="entry-ico">🩹</div>
+        <h3>面板急救箱</h3>
+        <p>忘记面板地址、账号、端口，或面板打不开时，直接连服务器查看与修复</p>
+      </div>
+      <div class="entry" onclick="goStep('domain')">
+        <div class="entry-ico">🔒</div>
+        <h3>域名与HTTPS</h3>
+        <p>检查域名解析、查看面板访问协议与 HTTPS 状态，排查「打不开 / 不安全」</p>
+      </div>
+      <div class="entry" onclick="goStep('cmd')">
+        <div class="entry-ico">⌨️</div>
+        <h3>直接给我命令</h3>
+        <p>不想用向导？生成一条可复制到任意 SSH 客户端执行的官方安装命令</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 向导 / 工具区 -->
+  <div class="card hidden" id="wizard">
+    <div class="steps-bar" id="stepsBar">
+      <div class="step-item" data-step="1"><span class="num">1</span>服务器信息</div>
+      <div class="step-sep"></div>
+      <div class="step-item" data-step="2"><span class="num">2</span>安装配置</div>
+      <div class="step-sep"></div>
+      <div class="step-item" data-step="3"><span class="num">3</span>自动安装</div>
+      <div class="step-sep"></div>
+      <div class="step-item" data-step="4"><span class="num">4</span>安装完成</div>
+    </div>
+
+    <!-- 第一步 -->
+    <div class="pane show" data-pane="1">
+      <div class="pane-title">第一步：填写你的服务器（VPS）信息</div>
+      <div class="pane-desc">程序通过 SSH 直连服务器执行 1Panel 官方安装脚本，密码只在内存中短暂停留，不会上传到任何第三方。</div>
+
+      <div class="hint-box">💡
+        <div>1Panel 安装脚本需要 <b>root 权限</b>。请在购买 VPS 的平台控制台确认 <b>IP 地址</b>、<b>root 密码</b>和 <b>SSH 端口</b>；部分服务商需要先开启 root 密码登录。</div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-item">
+          <label>服务器 IP 地址 <span class="req">*</span></label>
+          <input type="text" id="host" placeholder="例如 104.17.20.100" autocomplete="off">
+          <div class="field-error">请填写服务器 IP</div>
+        </div>
+        <div class="form-item">
+          <label>SSH 端口 <span class="tip">一般不用改</span></label>
+          <input type="number" id="sshPort" value="22">
+        </div>
+        <div class="form-item">
+          <label>SSH 用户名 <span class="tip">必须是 root 或可 sudo 的账号</span></label>
+          <input type="text" id="sshUser" value="root">
+        </div>
+        <div class="form-item">
+          <label>登录方式</label>
+          <select id="authType" onchange="toggleAuthMode()">
+            <option value="password">密码登录（推荐）</option>
+            <option value="key">密钥登录</option>
+          </select>
+        </div>
+        <div class="form-item full" id="passwordItem">
+          <label>SSH 密码 <span class="req">*</span></label>
+          <div class="input-with-btn">
+            <input type="password" id="sshPass" placeholder="服务器 root 密码">
+            <button class="mini-btn" onclick="togglePwd('sshPass')">👁 显示</button>
+          </div>
+          <div class="field-error">请填写 SSH 密码</div>
+        </div>
+        <div class="form-item full hidden" id="keyItem">
+          <label>私钥内容 <span class="req">*</span></label>
+          <textarea id="sshKey" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"></textarea>
+          <div class="field-error">请粘贴私钥</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;margin-top:16px">
+        <button class="btn btn-secondary btn-sm" id="testBtn" onclick="testConnection()">🔌 测试连接并识别系统</button>
+        <span class="small">识别成功后才能进入下一步</span>
+      </div>
+      <div class="conn-status" id="connStatus"></div>
+
+      <div id="sysCard" class="hidden">
+        <div class="section-title">服务器环境</div>
+        <div class="info-grid" id="sysInfoGrid"></div>
+        <div id="sysJudge"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="goStep('home')">← 返回</button>
+        <button class="btn btn-primary" onclick="goStep(2)">下一步：安装配置 →</button>
+      </div>
+    </div>
+
+    <!-- 第二步 -->
+    <div class="pane" data-pane="2">
+      <div class="pane-title">第二步：选择安装语言与面板配置</div>
+      <div class="pane-desc">这些是安装时传给 1Panel 官方 install.sh 的参数。留空的账号、密码、端口、安全入口会自动生成并在完成后展示。</div>
+
+      <div class="hint-box">🌏
+        <div><b>中文版</b>使用 1Panel 国内源（resource.fit2cloud.com），默认中文界面；<b>English</b> 使用国际源（resource.1panel.pro），默认英文界面。安装后都可以在面板「设置 → 语言」中随时切换。</div>
+      </div>
+
+      <div class="section-title">安装语言 / 安装源</div>
+      <div class="radio-cards" id="editionCards"></div>
+
+      <div class="section-title">面板登录信息</div>
+      <div class="form-grid">
+        <div class="form-item">
+          <label>面板用户名 <span class="tip">3–30 位字母/数字/下划线</span></label>
+          <input type="text" id="panelUser" value="admin">
+          <div class="field-error">需为 3–30 位字母、数字或下划线</div>
+        </div>
+        <div class="form-item">
+          <label>面板密码 <span class="tip">8–30 位</span></label>
+          <div class="input-with-btn">
+            <input type="text" id="panelPass" placeholder="留空自动生成 14 位随机密码">
+            <button class="mini-btn" onclick="fillRandom()">🎲 随机</button>
+          </div>
+          <div class="field-error">需为 8–30 位，仅允许字母、数字和 _ ! @ # $ % * , . ?</div>
+        </div>
+        <div class="form-item">
+          <label>面板端口 <span class="tip">1–65535，留空随机</span></label>
+          <input type="number" id="panelPort" placeholder="例如 26888">
+          <div class="field-error">端口需在 1–65535 之间</div>
+        </div>
+        <div class="form-item">
+          <label>安全入口 <span class="tip">登录地址末尾的路径，留空随机</span></label>
+          <input type="text" id="entrance" placeholder="例如 1p-a1b2c3d4">
+          <div class="field-error">需为 3–30 位字母、数字或下划线</div>
+        </div>
+        <div class="form-item">
+          <label>安装目录 <span class="tip">默认 /opt</span></label>
+          <input type="text" id="installDir" value="/opt" placeholder="/opt">
+          <div class="field-error">必须是以 / 开头的绝对路径</div>
+        </div>
+        <div class="form-item">
+          <label>Docker 安装 <span class="tip">应用商店依赖 Docker</span></label>
+          <select id="installDocker">
+            <option value="y" selected>安装 Docker（推荐）</option>
+            <option value="n">不安装 Docker</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>Docker 安装方式</label>
+          <select id="dockerMode">
+            <option value="auto" selected>自动（优先内置包，失败转在线）</option>
+            <option value="builtin">仅使用 1Panel 内置 Docker 包</option>
+            <option value="online">在线安装 Docker</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>Docker 镜像加速 <span class="tip">仅中文版生效</span></label>
+          <select id="accelerator">
+            <option value="y" selected>写入 1Panel 加速地址（推荐国内）</option>
+            <option value="n">不修改 Docker 镜像配置</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="check-line" id="forceLine" style="display:none">
+        <input type="checkbox" id="forceInstall">
+        <label for="forceInstall" style="font-weight:400">这台服务器的系统不在 1Panel 官方支持列表内，我已确认兼容并同意继续尝试</label>
+      </div>
+
+      <div id="matchBox" class="hint-box" style="margin-top:16px">🔎
+        <div id="matchText">尚未识别服务器，请先回第一步完成「测试连接并识别系统」。</div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="goStep(1)">← 上一步</button>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary" onclick="goStep('cmd')">只生成命令</button>
+          <button class="btn btn-primary" onclick="startInstall()">🚀 开始自动安装</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第三步 -->
+    <div class="pane" data-pane="3">
+      <div class="pane-title" id="instTitle">正在准备安装…</div>
+      <div class="pane-desc">下面是服务器的真实输出。1Panel 安装包约 80 MB，安装通常需要 3–8 分钟，期间请勿关闭窗口。</div>
+
+      <div class="stage-list" id="stageList">
+        <div class="stage" data-stage="1"><span class="num">1</span>连接服务器并识别系统类型、版本与架构</div>
+        <div class="stage" data-stage="2"><span class="num">2</span>下载 1Panel 官方安装包并执行 install.sh</div>
+        <div class="stage" data-stage="3"><span class="num">3</span>核对面板信息并生成访问地址</div>
+        <div class="stage" data-stage="4"><span class="num">4</span>安装完成</div>
+      </div>
+
+      <div class="hint-box warn hidden" id="stallHint">⏳
+        <div>
+          <b>已 <span id="stallIdle">0</span> 秒没有新的输出，可能卡在下载阶段。</b>
+          1Panel 安装包约 80 MB，部分线路较慢。可以继续等，也可以中止后切换安装源重试（已下载的文件不会复用，但不会影响已有数据）。
+          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="mini-btn" onclick="hideStall()">继续等待</button>
+            <button class="mini-btn" onclick="abortAndRetry()">换安装源重试</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="term">
+        <div class="term-bar">
+          <div class="term-dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+          <span id="termTitle" class="mono">root@server</span>
+          <span id="instTimer" class="mono" style="color:#a9b7c9;margin-left:8px">00:00</span>
+          <span style="margin-left:auto;color:#7ee787">● LIVE</span>
+          <button class="mini-btn" style="background:#223047;border-color:#2f4059;color:#c9d7e8" onclick="copyTerm()">复制日志</button>
+        </div>
+        <div class="term-body" id="termBody"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="abortInstall()">■ 中止安装</button>
+        <span class="small">中止只会断开 SSH，不会删除服务器上已安装的内容</span>
+      </div>
+    </div>
+
+    <!-- 第四步 -->
+    <div class="pane" data-pane="4">
+      <div class="pane-title">第四步：安装完成</div>
+      <div class="pane-desc">1Panel 已在服务器上运行。保存下面的信息，并先到云控制台安全组放行面板端口。</div>
+      <div id="resultArea"></div>
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="goStep('home')">← 返回首页</button>
+        <button class="btn btn-primary" onclick="goStep('rescue')">去面板急救箱看看</button>
+      </div>
+    </div>
+
+    <!-- 面板急救箱 -->
+    <div class="pane" data-pane="rescue">
+      <div class="pane-title">🩹 面板急救箱</div>
+      <div class="pane-desc">面板打不开、忘了账号密码或端口时，直接连服务器处理，不需要登录面板。</div>
+
+      <div class="hint-box">💡
+        <div>下面填的是 <b>服务器的 SSH 登录信息</b>（不是面板账号）。程序会连上服务器读取 1Panel 的配置与服务状态。</div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-item">
+          <label>服务器 IP <span class="req">*</span></label>
+          <input type="text" id="rHost" placeholder="例如 104.17.20.100">
+        </div>
+        <div class="form-item">
+          <label>SSH 端口</label>
+          <input type="number" id="rPort" value="22">
+        </div>
+        <div class="form-item">
+          <label>SSH 用户名</label>
+          <input type="text" id="rUser" value="root">
+        </div>
+        <div class="form-item">
+          <label>SSH 密码 <span class="req">*</span></label>
+          <div class="input-with-btn">
+            <input type="password" id="rPass">
+            <button class="mini-btn" onclick="togglePwd('rPass')">👁 显示</button>
+          </div>
+        </div>
+        <div class="form-item full">
+          <label>重置面板密码 <span class="tip">仅在点「重置密码」时使用，8–30 位</span></label>
+          <input type="text" id="rNewPass" placeholder="留空则不执行重置">
+        </div>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:9px;margin-top:16px">
+        <button class="btn btn-secondary btn-sm" onclick="rescueRun('info')">📋 查看面板信息</button>
+        <button class="btn btn-secondary btn-sm" onclick="rescueRun('portinfo')">🔍 检查端口与防火墙</button>
+        <button class="btn btn-secondary btn-sm" onclick="rescueRun('restart')">🔄 重启面板</button>
+        <button class="btn btn-secondary btn-sm" onclick="rescueRun('resetpwd')">🔑 重置面板密码</button>
+        <button class="btn btn-secondary btn-sm" onclick="rescueRun('resetentrance')">🚪 重置安全入口</button>
+      </div>
+
+      <div class="conn-status" id="rescueStatus"></div>
+      <div class="section-title">执行结果</div>
+      <div class="out-box" id="rescueOut">尚未执行任何操作。</div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="goStep('home')">← 返回首页</button>
+        <span class="small">读不到信息，说明该机器可能还没有安装 1Panel</span>
+      </div>
+    </div>
+
+    <!-- 域名与 HTTPS -->
+    <div class="pane" data-pane="domain">
+      <div class="pane-title">🔒 域名与 HTTPS</div>
+      <div class="pane-desc">检查域名是否解析到这台服务器，读取 1Panel 面板当前的访问协议与 HTTPS 状态。</div>
+
+      <div class="form-grid">
+        <div class="form-item">
+          <label>服务器 IP <span class="req">*</span></label>
+          <input type="text" id="dHost" placeholder="面板所在服务器 IP">
+        </div>
+        <div class="form-item">
+          <label>域名 <span class="tip">计划绑定到面板的域名</span></label>
+          <input type="text" id="dDomain" placeholder="例如 panel.example.com">
+        </div>
+        <div class="form-item">
+          <label>SSH 端口</label>
+          <input type="number" id="dPort" value="22">
+        </div>
+        <div class="form-item">
+          <label>SSH 密码 <span class="req">*</span></label>
+          <div class="input-with-btn">
+            <input type="password" id="dPass">
+            <button class="mini-btn" onclick="togglePwd('dPass')">👁 显示</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:9px;margin-top:16px">
+        <button class="btn btn-secondary btn-sm" onclick="checkDomain()">🌐 检查域名解析</button>
+        <button class="btn btn-secondary btn-sm" onclick="checkSSL()">🔐 读取面板 HTTPS 状态</button>
+      </div>
+
+      <div class="conn-status" id="domainStatus"></div>
+      <div class="section-title">检查结果</div>
+      <div class="out-box" id="domainOut">尚未执行检查。</div>
+
+      <div class="hint-box warn" style="margin-top:16px">⚠️
+        <div>1Panel 默认使用 HTTP 访问，安全性主要由「安全入口 + 强密码」保障。如需 HTTPS，可在面板「设置 → 面板 → HTTPS」上传证书或申请证书；启用后登录地址会变为 <span class="mono">https://IP:端口/安全入口</span>。</div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="goStep('home')">← 返回首页</button>
+        <span class="small">证书申请与绑定需在面板内操作，本工具只做前置检查</span>
+      </div>
+    </div>
+
+    <!-- 直接给我命令 -->
+    <div class="pane" data-pane="cmd">
+      <div class="pane-title">⌨️ 直接给我命令</div>
+      <div class="pane-desc">生成一条包含你全部设置的 1Panel 官方安装命令，复制到任意 SSH 客户端执行即可，效果与自动安装一致。</div>
+
+      <div class="section-title">安装语言 / 安装源</div>
+      <div class="radio-cards" id="cmdEditionCards"></div>
+
+      <div class="section-title">安装参数</div>
+      <div class="form-grid">
+        <div class="form-item">
+          <label>面板用户名</label>
+          <input type="text" id="cUser" value="admin">
+        </div>
+        <div class="form-item">
+          <label>面板密码</label>
+          <div class="input-with-btn">
+            <input type="text" id="cPass" placeholder="留空自动生成">
+            <button class="mini-btn" onclick="fillRandom(true)">🎲 随机</button>
+          </div>
+        </div>
+        <div class="form-item">
+          <label>面板端口</label>
+          <input type="number" id="cPort" placeholder="留空随机">
+        </div>
+        <div class="form-item">
+          <label>安全入口</label>
+          <input type="text" id="cEntrance" placeholder="留空随机">
+        </div>
+        <div class="form-item">
+          <label>安装目录</label>
+          <input type="text" id="cDir" value="/opt">
+        </div>
+        <div class="form-item">
+          <label>Docker</label>
+          <select id="cDocker">
+            <option value="y" selected>安装 Docker（推荐）</option>
+            <option value="n">不安装</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:16px">
+        <button class="btn btn-primary btn-sm" onclick="generateCmd()">生成安装命令</button>
+      </div>
+      <div class="section-title">命令</div>
+      <div class="cmd-box" id="cmdBox">尚未生成。点击上方按钮生成命令。</div>
+      <div style="display:flex;gap:9px;margin-top:10px">
+        <button class="btn btn-secondary btn-sm" onclick="copyCmd()">📋 复制命令</button>
+      </div>
+
+      <div class="hint-box warn" style="margin-top:16px">⚠️
+        <div>命令里包含明文面板密码（<span class="mono">PANEL_PASSWORD</span> 环境变量），请勿截图或分享。执行前请确认服务器是<b>全新或纯净系统</b>，并且以 <b>root</b> 身份运行。</div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="goStep('home')">← 返回首页</button>
+        <span class="small">需在服务器上以 root 执行</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  1Panel 面板一键安装器 · 调用 <a href="https://github.com/1Panel-dev/1Panel" target="_blank" rel="noopener">1Panel 官方安装脚本</a> ·
+  非官方工具，与 1Panel 官方无隶属关系 ·
+  仅供个人学习与合法用途
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+const $ = (id) => document.getElementById(id);
+let meta = { editions: [] };
+let selectedEdition = 'cn';
+let sysInfo = null;
+let effectiveConfig = null;
+let lastDone = null;
+let termText = '';
+let installStartedAt = 0;
+
+/* ---------- 通用 ---------- */
+function toast(msg) {
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => el.classList.remove('show'), 2100);
+}
+function togglePwd(id) {
+  const el = $(id);
+  if (!el) return;
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+function toggleAuthMode() {
+  const isKey = $('authType').value === 'key';
+  $('passwordItem').classList.toggle('hidden', isKey);
+  $('keyItem').classList.toggle('hidden', !isKey);
+}
+function markInvalid(id, bad) {
+  const el = $(id);
+  if (el) el.classList.toggle('invalid', !!bad);
+}
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => toast('已复制')).catch(() => toast('复制失败，请手动选择'));
+}
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function escapeJs(s) {
+  return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+}
+
+/* ---------- 步骤切换 ---------- */
+function goStep(n) {
+  const isHome = String(n) === 'home';
+  $('wizard').classList.toggle('hidden', isHome);
+  $('hero').style.display = isHome ? '' : 'none';
+  document.querySelectorAll('.pane').forEach((p) => p.classList.toggle('show', p.dataset.pane === String(n)));
+  document.querySelectorAll('.step-item').forEach((s) => {
+    const sn = parseInt(s.dataset.step, 10);
+    s.classList.toggle('active', sn === n);
+    s.classList.toggle('done', typeof n === 'number' && sn < n);
+  });
+  const bar = $('stepsBar');
+  if (['rescue', 'domain', 'cmd'].includes(String(n))) {
+    bar.classList.add('hidden');
+  } else if (n !== 'home') {
+    bar.classList.remove('hidden');
+  }
+  if (n === 2) updateMatchBox();
+  if (n === 'cmd') renderCmdCards();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ---------- 服务器配置 ---------- */
+function collectServer() {
+  return {
+    host: $('host').value.trim(),
+    sshPort: Number($('sshPort').value) || 22,
+    sshUser: $('sshUser').value.trim() || 'root',
+    password: $('authType').value === 'password' ? $('sshPass').value : '',
+    privateKey: $('authType').value === 'key' ? $('sshKey').value.trim() : '',
+  };
+}
+
+/* ---------- 测试连接 ---------- */
+function testConnection() {
+  const cfg = collectServer();
+  const status = $('connStatus');
+  if (!cfg.host) { markInvalid('host', true); return; }
+  if ($('authType').value === 'password' && !cfg.password.trim()) { markInvalid('sshPass', true); return; }
+  markInvalid('host', false); markInvalid('sshPass', false);
+
+  const btn = $('testBtn');
+  btn.disabled = true;
+  status.className = 'conn-status';
+  status.innerHTML = '<div class="spinner"></div><span>正在连接 ' + escapeHtml(cfg.host) + ' …</span>';
+
+  socket.emit('ssh:test', cfg, (res) => {
+    if (!res.ok) {
+      btn.disabled = false;
+      status.className = 'conn-status fail';
+      status.innerHTML = '<span>✕</span><span>' + escapeHtml(res.msg) + '</span>';
+      sysInfo = null;
+      $('sysCard').classList.add('hidden');
+      return;
+    }
+    status.innerHTML = '<div class="spinner"></div><span>SSH 连接成功，正在识别系统类型与架构…</span>';
+    socket.emit('system:detect', cfg, (info) => {
+      btn.disabled = false;
+      if (!info.ok) {
+        status.className = 'conn-status fail';
+        status.innerHTML = '<span>✕</span><span>' + escapeHtml(info.msg || '系统识别失败') + '</span>';
+        return;
+      }
+      sysInfo = info;
+      const j = info.judgement || {};
+      status.className = 'conn-status ' + (j.supported ? 'ok' : (j.canForce ? 'fail' : 'fail'));
+      status.innerHTML = '<span>' + (j.supported ? '✓' : '!') + '</span><span>' +
+        escapeHtml(info.pretty || info.id || '未知系统') + ' · ' + escapeHtml(info.arch || '') +
+        ' · ' + escapeHtml(j.reason || '') + '</span>';
+      renderSystem(info);
+      updateMatchBox();
+    });
+  });
+  setTimeout(() => {
+    if (btn.disabled) {
+      btn.disabled = false;
+      status.className = 'conn-status fail';
+      status.innerHTML = '<span>✕</span><span>连接测试超时（60 秒无响应）</span>';
+    }
+  }, 60000);
+}
+
+/* ---------- 系统信息 ---------- */
+function renderSystem(info) {
+  const j = info.judgement || {};
+  const cells = [
+    { k: '系统', v: info.pretty || info.id || '未知' },
+    { k: '版本 ID', v: info.versionId || '-' },
+    { k: 'CPU 架构', v: (info.arch || '-') + (j.packageArch ? ' → ' + j.packageArch : '') },
+    { k: '内核', v: info.kernel || '-' },
+    { k: '内存', v: info.memMb ? info.memMb + ' MB' : '-' },
+    { k: '根分区可用', v: info.diskFreeMb ? Math.round(info.diskFreeMb / 1024) + ' GB' : '-' },
+    { k: 'root 权限', v: info.isRoot ? '是' : '否' },
+    { k: '1Panel 状态', v: info.panelInstalled ? ('已安装 ' + (info.panelVersion || '')) : '未安装' },
+    { k: 'Docker', v: info.docker || '未安装' },
+    { k: '主机名', v: info.hostname || '-' },
+  ];
+  $('sysInfoGrid').innerHTML = cells.map((c) => `
+    <div class="info-cell"><div class="k">${escapeHtml(c.k)}</div><div class="v">${escapeHtml(c.v)}</div></div>`).join('');
+
+  const warns = (j.warnings || []).map((w) => '· ' + escapeHtml(w)).join('<br>');
+  let judgeHtml = '';
+  if (j.supported) {
+    judgeHtml = '<div class="hint-box success">✅<div><b>可以安装。</b>将自动匹配 ' + escapeHtml(j.packageArch || '') + ' 架构的 1Panel 官方 v2 安装包。</div></div>';
+  } else if (j.canForce) {
+    judgeHtml = '<div class="hint-box warn">⚠️<div><b>系统不在官方支持列表。</b>' + escapeHtml(j.reason) + '<br>可在下一步勾选确认后继续尝试。</div></div>';
+  } else {
+    judgeHtml = '<div class="hint-box danger">⛔<div><b>无法安装。</b>' + escapeHtml(j.reason) + '</div></div>';
+  }
+  if (warns) judgeHtml += '<div class="hint-box warn">⚠️<div>' + warns + '</div></div>';
+  $('sysJudge').innerHTML = judgeHtml;
+  $('sysCard').classList.remove('hidden');
+}
+
+function updateMatchBox() {
+  const box = $('matchBox');
+  const text = $('matchText');
+  if (!box || !text) return;
+  if (!sysInfo) {
+    text.innerHTML = '尚未识别服务器，请先回第一步完成「测试连接并识别系统」。';
+    return;
+  }
+  const j = sysInfo.judgement || {};
+  const ed = meta.editions.find((e) => e.key === selectedEdition) || { label: selectedEdition === 'cn' ? '中文版（国内源）' : 'English（国际源）' };
+  const arch = j.packageArch || sysInfo.arch || '未知';
+  text.innerHTML = '已识别：<b>' + escapeHtml(sysInfo.pretty || sysInfo.id || '未知系统') + '</b> · ' +
+    escapeHtml(sysInfo.arch || '') + ' → 安装包架构 <b>' + escapeHtml(arch) + '</b>；' +
+    '安装源：<b>' + escapeHtml(ed.label) + '</b>；' +
+    (j.supported ? '<span style="color:#0b6b3a">系统受支持</span>' : '<span style="color:#b45309">系统未在支持列表，需勾选确认</span>');
+  $('forceLine').style.display = j.canForce && !j.supported ? 'flex' : 'none';
+}
+
+/* ---------- 语言卡片 ---------- */
+function renderEditionCards() {
+  const items = meta.editions.length ? meta.editions : [
+    { key: 'cn', label: '中文版（国内源）', note: '默认中文界面，应用商店使用国内源' },
+    { key: 'intl', label: 'English（国际源）', note: '默认英文界面，使用国际源' },
+  ];
+  const render = (id, onPick) => {
+    const box = $(id);
+    if (!box) return;
+    box.innerHTML = items.map((it) => `
+      <div class="radio-card ${it.key === selectedEdition ? 'selected' : ''}" data-key="${it.key}">
+        <div class="rc-title"><span>${escapeHtml(it.label)}</span>${it.key === selectedEdition ? '<span class="rc-check">✓</span>' : ''}</div>
+        ${it.note ? `<div class="rc-note">${escapeHtml(it.note)}</div>` : ''}
+      </div>`).join('');
+    box.querySelectorAll('.radio-card').forEach((el) => {
+      el.addEventListener('click', () => { selectedEdition = el.dataset.key; onPick(); });
+    });
+  };
+  render('editionCards', () => { renderEditionCards(); updateMatchBox(); });
+  render('cmdEditionCards', () => { renderEditionCards(); });
+}
+function renderCmdCards() { renderEditionCards(); }
+
+/* ---------- 随机凭据 ---------- */
+function fillRandom(cmdOnly) {
+  socket.emit('creds:random', {}, (res) => {
+    if (!res || !res.ok) return;
+    if (cmdOnly) {
+      $('cUser').value = res.username;
+      $('cPass').value = res.password;
+      $('cPort').value = res.port;
+      $('cEntrance').value = res.entrance;
+      $('cDir').value = res.installDir || '/opt';
+    } else {
+      $('panelUser').value = res.username;
+      $('panelPass').value = res.password;
+      $('panelPort').value = res.port;
+      $('entrance').value = res.entrance;
+      $('installDir').value = res.installDir || '/opt';
+    }
+    toast('已生成随机凭据，请记下来');
+  });
+}
+
+/* ---------- 表单校验 ---------- */
+function validatePanelForm() {
+  const user = $('panelUser').value.trim() || 'admin';
+  const pass = $('panelPass').value;
+  const port = $('panelPort').value.trim();
+  const entrance = $('entrance').value.trim();
+  const dir = $('installDir').value.trim() || '/opt';
+  const errs = [];
+  const bad = {};
+
+  if (!/^[a-zA-Z0-9_]{3,30}$/.test(user)) { errs.push('面板用户名需为 3–30 位字母、数字或下划线'); bad.user = true; }
+  if (pass && !/^[a-zA-Z0-9_!@#$%*,.?]{8,30}$/.test(pass)) { errs.push('面板密码需为 8–30 位，仅允许字母、数字和 _ ! @ # $ % * , . ?'); bad.pass = true; }
+  if (port && !(Number(port) >= 1 && Number(port) <= 65535)) { errs.push('面板端口需在 1–65535 之间'); bad.port = true; }
+  if (entrance && !/^[a-zA-Z0-9_]{3,30}$/.test(entrance)) { errs.push('安全入口需为 3–30 位字母、数字或下划线'); bad.entrance = true; }
+  if (!dir.startsWith('/') || dir === '/' || /[\s'"]/.test(dir)) { errs.push('安装目录必须是以 / 开头的绝对路径'); bad.dir = true; }
+
+  markInvalid('panelUser', !!bad.user);
+  markInvalid('panelPass', !!bad.pass);
+  markInvalid('panelPort', !!bad.port);
+  markInvalid('entrance', !!bad.entrance);
+  markInvalid('installDir', !!bad.dir);
+  return errs;
+}
+
+/* ---------- 安装 ---------- */
+function startInstall() {
+  const server = collectServer();
+  if (!server.host) { toast('请先在第一步填写服务器信息'); goStep(1); return; }
+  if (!server.password && !server.privateKey) { toast('请填写 SSH 密码或私钥'); goStep(1); return; }
+  const j = sysInfo && sysInfo.judgement;
+  if (!j) { toast('请先在第一步完成「测试连接并识别系统」'); goStep(1); return; }
+  if (!j.supported && !(j.canForce && $('forceInstall').checked)) {
+    toast(j.canForce ? '请勾选「我已确认兼容」后再继续' : '当前系统不受支持，无法安装');
+    return;
+  }
+  const errs = validatePanelForm();
+  if (errs.length) { toast(errs[0]); return; }
+  if (sysInfo.panelInstalled) { toast('该服务器已安装 1Panel，请先卸载或直接使用现有面板'); return; }
+
+  const cfg = Object.assign({}, server, {
+    edition: selectedEdition,
+    panelUser: $('panelUser').value.trim() || 'admin',
+    panelPass: $('panelPass').value,
+    panelPort: $('panelPort').value.trim(),
+    entrance: $('entrance').value.trim(),
+    installDir: $('installDir').value.trim() || '/opt',
+    installDocker: $('installDocker').value === 'y',
+    dockerMode: $('dockerMode').value,
+    accelerator: $('accelerator').value === 'y',
+    force: !!(j.canForce && !j.supported && $('forceInstall').checked),
+  });
+
+  effectiveConfig = null;
+  termText = '';
+  $('termBody').innerHTML = '';
+  $('termTitle').textContent = 'root@' + server.host;
+  installStartedAt = 0;
+  $('instTimer').textContent = '00:00';
+  hideStall();
+  document.querySelectorAll('.stage').forEach((s) => s.classList.remove('active', 'done'));
+  setStage(1);
+
+  goStep(3);
+  $('instTitle').textContent = '正在安装，请稍候…';
+  socket.emit('install:start', cfg);
+}
+
+function setStage(n) {
+  document.querySelectorAll('.stage').forEach((s) => {
+    const sn = Number(s.dataset.stage);
+    s.classList.toggle('active', sn === n);
+    s.classList.toggle('done', sn < n);
+  });
+}
+
+const MAX_TERM_NODES = 600;
+function appendTerm(line, level) {
+  termText += line;
+  const body = $('termBody');
+  const prog = $('termProgress');
+  if (prog) prog.remove();
+  const span = document.createElement('span');
+  if (level) span.className = 'l-' + level;
+  span.textContent = line;
+  body.appendChild(span);
+  while (body.childElementCount > MAX_TERM_NODES) body.removeChild(body.firstElementChild);
+  body.scrollTop = body.scrollHeight;
+}
+function updateProgress(text) {
+  const body = $('termBody');
+  let el = $('termProgress');
+  if (!el) {
+    el = document.createElement('span');
+    el.id = 'termProgress';
+    el.className = 'l-progress';
+    body.appendChild(el);
+  }
+  el.textContent = text + '\n';
+  body.scrollTop = body.scrollHeight;
+  const last = termText.lastIndexOf('\n');
+  termText = termText.slice(0, last === -1 ? 0 : last + 1) + text + '\n';
+}
+function abortInstall() { socket.emit('install:abort'); }
+function copyTerm() { copyText(termText || '(暂无日志)'); }
+
+socket.on('log', (d) => {
+  if (d && d.text) appendTerm('[安装器] ' + d.text + '\n', d.level);
+});
+socket.on('term', (line) => appendTerm(line));
+socket.on('progress', (text) => { if (text) updateProgress(String(text)); });
+socket.on('cmd', (d) => { if (d && d.text) appendTerm('[执行命令，密码已隐藏]\n' + d.text + '\n', 'warn'); });
+socket.on('install:config', (d) => { effectiveConfig = d; });
+socket.on('stage', (d) => {
+  if (d && d.stage) setStage(d.stage);
+  if (d && d.text) $('instTitle').textContent = d.text;
+});
+socket.on('system', (d) => {
+  if (d && d.judgement) {
+    appendTerm('[安装器] 系统：' + ((d.info && (d.info.pretty || d.info.id)) || '未知') + '（' + ((d.info && d.info.arch) || '?') + '）\n', 'success');
+    appendTerm('[安装器] ' + d.judgement.reason + '\n', d.judgement.supported ? 'success' : 'error');
+  }
+});
+socket.on('install:failed', (d) => {
+  const msg = (d && d.error) || '安装失败';
+  appendTerm('[安装器] ✗ ' + msg + '\n', 'error');
+  $('instTitle').textContent = '安装未完成';
+  document.querySelectorAll('.stage').forEach((s) => { if (s.classList.contains('active')) s.classList.remove('active'); });
+  toast('安装未完成，请查看日志');
+});
+socket.on('install:done', (d) => {
+  lastDone = d;
+  setStage(4);
+  document.querySelectorAll('.stage').forEach((s) => s.classList.add('done'));
+  goStep(4);
+  renderResult(d);
+});
+
+/* 计时与卡住提示 */
+function fmtSec(s) {
+  const m = Math.floor(s / 60), r = s % 60;
+  return String(m).padStart(2, '0') + ':' + String(r).padStart(2, '0');
+}
+socket.on('tick', (d) => {
+  if (!d) return;
+  if (!installStartedAt) installStartedAt = Date.now() - d.elapsedMs;
+  $('instTimer').textContent = fmtSec(Math.round(d.elapsedMs / 1000));
+});
+socket.on('install:stall', (d) => {
+  if (!d) return;
+  $('stallIdle').textContent = d.idleSec;
+  $('stallHint').classList.remove('hidden');
+  appendTerm('[安装器] 已 ' + d.idleSec + ' 秒无输出，可能卡在下载阶段。可继续等待，或点「换安装源重试」。\n', 'warn');
+});
+function hideStall() { $('stallHint').classList.add('hidden'); }
+function abortAndRetry() {
+  hideStall();
+  socket.emit('install:abort');
+  selectedEdition = selectedEdition === 'cn' ? 'intl' : 'cn';
+  renderEditionCards();
+  const label = selectedEdition === 'cn' ? '中文版（国内源）' : 'English（国际源）';
+  toast('已切换安装源：' + label);
+  setTimeout(() => startInstall(), 1000);
+}
+
+/* ---------- 结果 ---------- */
+function renderResult(d) {
+  const pass = (effectiveConfig && effectiveConfig.panelPass) || d.password || '';
+  const rows = [];
+  if (d.url) rows.push({ label: '面板访问地址（点击打开）', value: d.url, href: d.url });
+  rows.push({ label: '用户名', value: d.username || 'admin' });
+  rows.push({ label: '面板密码', value: pass || '（未获取到，可用急救箱重置）', pass: true });
+  if (d.port) rows.push({ label: '面板端口', value: d.port });
+  if (d.entrance) rows.push({ label: '安全入口', value: d.entrance });
+  if (d.version) rows.push({ label: '1Panel 版本', value: d.version });
+  if (d.core) rows.push({ label: '服务状态', value: 'core: ' + d.core + (d.agent ? ' / agent: ' + d.agent : '') });
+  if (d.edition) rows.push({ label: '安装版本', value: d.edition });
+  if (d.baseDir) rows.push({ label: '安装目录', value: d.baseDir });
+
+  $('resultArea').innerHTML = `
+    <div class="result-box">
+      <div class="result-title">🎉 安装成功！</div>
+      <div class="result-sub">1Panel 已在服务器上运行。请先到云控制台安全组放行 <b>${escapeHtml(d.port || '面板')}</b> 端口（TCP），再访问下面的地址。</div>
+      ${rows.map((r) => `
+        <div class="copy-row">
+          <div style="flex:1;min-width:0">
+            <div class="label">${r.label}</div>
+            ${r.href
+              ? `<div class="value"><a href="${escapeHtml(r.href)}" target="_blank" rel="noopener">${escapeHtml(r.value)}</a></div>`
+              : `<div class="value ${r.pass ? 'pass' : ''}">${escapeHtml(r.value)}</div>`}
+          </div>
+          <button class="mini-btn" onclick="copyText('${escapeJs(r.value)}')">复制</button>
+        </div>`).join('')}
+      ${d.note ? `<div class="hint-box warn" style="margin:12px 0 0">⚠️<div>${escapeHtml(d.note)}</div></div>` : ''}
+      <div class="hint-box" style="margin:12px 0 0">💡
+        <div>打不开面板？① 确认云安全组已放行面板端口（TCP）；② 地址必须带上安全入口路径；③ 仍不行到「面板急救箱 → 查看面板信息」核对，或在服务器执行 <span class="mono">1pctl user-info</span>。</div>
+      </div>
+      <div class="hint-box" style="margin:8px 0 0">🔐
+        <div>面板默认 HTTP，登录安全依赖安全入口与强密码。可在面板「设置 → 面板 → HTTPS」绑定域名并启用证书。</div>
+      </div>
+    </div>`;
+}
+
+/* ---------- 急救箱 ---------- */
+function collectRescue() {
+  return {
+    host: $('rHost').value.trim(),
+    sshPort: Number($('rPort').value) || 22,
+    sshUser: $('rUser').value.trim() || 'root',
+    password: $('rPass').value,
+  };
+}
+function rescueRun(action) {
+  const srv = collectRescue();
+  if (!srv.host) { toast('请填写服务器 IP'); return; }
+  if (!srv.password) { toast('请填写 SSH 密码'); return; }
+  if (action === 'resetpwd' && !$('rNewPass').value.trim()) { toast('请填写新的面板密码'); return; }
+
+  const status = $('rescueStatus');
+  status.className = 'conn-status';
+  status.innerHTML = '<div class="spinner"></div><span>正在执行…</span>';
+  $('rescueOut').textContent = '';
+
+  socket.emit('rescue:run', {
+    server: srv,
+    action,
+    newPassword: $('rNewPass').value.trim(),
+  }, (res) => {
+    status.className = 'conn-status ' + (res.ok ? 'ok' : 'fail');
+    status.innerHTML = '<span>' + (res.ok ? '✓' : '✕') + '</span><span>' + (res.ok ? '执行完成' : '执行结束，请查看输出') + '</span>';
+    $('rescueOut').textContent = res.output || '(无输出)';
+  });
+}
+
+/* ---------- 域名 / HTTPS ---------- */
+function checkDomain() {
+  const domain = $('dDomain').value.trim();
+  const ip = $('dHost').value.trim();
+  if (!domain) { toast('请填写域名'); return; }
+  const status = $('domainStatus');
+  status.className = 'conn-status';
+  status.innerHTML = '<div class="spinner"></div><span>正在查询 DNS…</span>';
+  socket.emit('domain:check', { domain, expectedIp: ip }, (res) => {
+    status.className = 'conn-status ' + (res.ok ? 'ok' : 'fail');
+    status.innerHTML = '<span>' + (res.ok ? '✓' : '✕') + '</span><span>' + escapeHtml(res.msg) + '</span>';
+    $('domainOut').textContent = res.ok ? '解析结果：' + (res.ips || []).join(', ') : res.msg;
+  });
+}
+function checkSSL() {
+  const srv = {
+    host: $('dHost').value.trim(),
+    sshPort: Number($('dPort').value) || 22,
+    sshUser: 'root',
+    password: $('dPass').value,
+  };
+  if (!srv.host) { toast('请填写服务器 IP'); return; }
+  if (!srv.password) { toast('请填写 SSH 密码'); return; }
+  const status = $('domainStatus');
+  status.className = 'conn-status';
+  status.innerHTML = '<div class="spinner"></div><span>正在读取面板访问状态…</span>';
+  socket.emit('ssl:status', { server: srv, domain: $('dDomain').value.trim() }, (res) => {
+    status.className = 'conn-status ' + (res.ok ? 'ok' : 'fail');
+    status.innerHTML = '<span>' + (res.ok ? '✓' : '✕') + '</span><span>' + (res.ok ? '读取完成' : '读取失败') + '</span>';
+    $('domainOut').textContent = res.output || '(无输出)';
+  });
+}
+
+/* ---------- 命令生成 ---------- */
+function generateCmd() {
+  const cfg = {
+    edition: selectedEdition,
+    panelUser: $('cUser').value.trim() || 'admin',
+    panelPass: $('cPass').value,
+    panelPort: $('cPort').value.trim(),
+    entrance: $('cEntrance').value.trim(),
+    installDir: $('cDir').value.trim() || '/opt',
+    installDocker: $('cDocker').value === 'y',
+    dockerMode: 'auto',
+    accelerator: true,
+  };
+  socket.emit('cmd:generate', cfg, (res) => {
+    if (!res || !res.ok) { toast('生成失败：' + ((res && res.msg) || '未知错误')); return; }
+    $('cmdBox').textContent = res.command;
+    if (res.config) {
+      // 把最终生效值回填，方便用户对照
+      $('cUser').value = res.config.panelUser;
+      $('cPass').value = res.config.panelPass;
+      $('cPort').value = res.config.panelPort;
+      $('cEntrance').value = res.config.entrance;
+    }
+    toast('命令已生成');
+  });
+}
+function copyCmd() {
+  const text = $('cmdBox').textContent;
+  if (!text || text.startsWith('尚未生成')) { toast('请先生成命令'); return; }
+  copyText(text);
+}
+
+/* ---------- 初始化 ---------- */
+socket.on('connect', () => {
+  socket.emit('meta:get', {}, (res) => {
+    if (res && res.ok) {
+      meta = res;
+      renderEditionCards();
+    }
+  });
+});
+$('sshPass').addEventListener('keydown', (e) => { if (e.key === 'Enter') testConnection(); });
+goStep('home');
+</script>
+</body>
+</html>

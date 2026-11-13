@@ -1,0 +1,25 @@
+{
+  "name": "1panel-installer-desktop",
+  "version": "1.0.0",
+  "description": "Visual 1Panel installer for Windows desktop (SSH, system-aware, Chinese/English)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "1panel",
+    "installer",
+    "ssh",
+    "desktop",
+    "webview2"
+  ],
+  "author": "Jasson",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.2.1",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.4",
+    "ssh2": "^1.17.0"
+  }
+}

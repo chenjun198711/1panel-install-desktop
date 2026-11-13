@@ -1,0 +1,17 @@
+# 依赖与构建产物
+app/node_modules/
+runtime/
+*.exe
+*.exe.config
+*.dll
+*.zip
+
+# 运行与测试
+data/
+.tmp/
+.verify/
+.dumate/
+
+# 系统文件
+Thumbs.db
+.DS_Store
